@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/cloudy"
+    android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
+    tools:context=".ui.AddFavourite">
+
+
+
+
+<LinearLayout
+    android:id="@+id/linear"
+    android:layout_below="@+id/textview"
+    android:background="@drawable/autocomplete_style"
+    android:layout_margin="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <AutoCompleteTextView
+
+        android:drawableLeft="@drawable/ic_baseline_search_24"
+        android:id="@+id/autoComplete"
+        android:layout_width="fill_parent"
+        android:hint="@string/enter_favourite_city"
+        android:layout_height="wrap_content" />
+
+
+</LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_margin="10dp"
+        android:layout_below="@+id/linear"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <Button
+            android:id="@+id/cancel"
+            android:background="@drawable/buttons_style"
+            android:textAllCaps="false"
+            android:text="@string/cancel"
+            android:gravity="center"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/add_favourite"
+            android:background="@drawable/buttons_style"
+            android:textAllCaps="false"
+            android:text="@string/add_city"
+            android:gravity="center"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"/>
+
+
+
+
+    </LinearLayout>
+
+
+
+
+
+</RelativeLayout>
