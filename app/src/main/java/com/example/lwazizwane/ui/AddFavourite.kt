@@ -1,8 +1,8 @@
 package com.example.lwazizwane.ui
 
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.os.Handler
@@ -11,6 +11,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
@@ -51,21 +52,28 @@ class AddFavourite : AppCompatActivity() {
         setContentView(R.layout.activity_add_favourite)
 
 
+        // hide action bar
         val actionBar = supportActionBar
         actionBar!!.hide()
 
         handler2 = Handler()
+
+        //sql lite
         helper = DB(this, null, null, 1)
+        getPrefs = PreferenceManager.getDefaultSharedPreferences(baseContext)
+
 
         add_favourite = findViewById<View>(R.id.add_favourite) as Button
         cancel = findViewById<View>(R.id.cancel) as Button
         autoCompleteTextView = findViewById<View>(R.id.autoComplete) as AutoCompleteTextView
 
 
+
+        //function to get RSA city names
         getGeoNames()
 
 
-        getPrefs = PreferenceManager.getDefaultSharedPreferences(baseContext)
+
 
 
         add_favourite!!.setOnClickListener {
@@ -96,18 +104,29 @@ class AddFavourite : AppCompatActivity() {
 
                 db!!.close()
 
+
+                //hide keyboard
+                val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                if (null != currentFocus) imm.hideSoftInputFromWindow(currentFocus
+                        ?.applicationWindowToken, 0)
+
+
+
                 Toast.makeText(this, "City Added to Favourite", Toast.LENGTH_LONG).show()
 
 
+
+                // open new activity after adding a new city to favourite
                 val handler = Handler()
-                handler.postDelayed({ // Do something after 5s = 5000ms
-                    val packageManager: PackageManager = applicationContext.packageManager
-                    val intent = packageManager.getLaunchIntentForPackage(applicationContext.packageName)
-                    val componentName = intent!!.component
-                    val mainIntent = Intent.makeRestartActivityTask(componentName)
-                    applicationContext.startActivity(mainIntent)
-                    Runtime.getRuntime().exit(0)
-                }, 5000)
+                handler.postDelayed({
+
+
+                    val intent = Intent(this@AddFavourite, WeatherMain::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(intent)
+                    this.finish()
+
+                }, 3000)
 
 
 
