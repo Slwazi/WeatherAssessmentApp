@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.*
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.StrictMode
@@ -65,6 +66,9 @@ class CurrentLocationWeather : Fragment(), LocationListener {
 
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
+    var location: Location? = null
+    var provider: String? = null
+
 
     var getPrefs: SharedPreferences? = null
 
@@ -77,17 +81,24 @@ class CurrentLocationWeather : Fragment(), LocationListener {
         StrictMode.setThreadPolicy(policy)
 
 
+        //gety location permission on run
+        getLocationPermissionOnRun()
+
+
+
 
 
         getPrefs = PreferenceManager.getDefaultSharedPreferences(activity!!.baseContext)
 
-        getLocation()
+
 
 
         progressdialog = ProgressDialog(activity)
         progressdialog!!.setMessage("Please Wait....")
 
         progressdialog!!.show()
+
+
 
         handler = Handler()
         handler2 = Handler()
@@ -411,7 +422,7 @@ class CurrentLocationWeather : Fragment(), LocationListener {
 
             }
 
-
+            // display only weather at 12 to list
             for (d in forecastDataModels!!) {
                 if (d.time == "12:00:00") {
 
@@ -437,12 +448,33 @@ class CurrentLocationWeather : Fragment(), LocationListener {
            // Log.e("SimpleWeather", "One or more fields not found in the JSON data")
         }
     }
-    private fun getLocation() {
-        locationManager = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if ((activity?.let { ContextCompat.checkSelfPermission(it, Manifest.permission.ACCESS_FINE_LOCATION) } != PackageManager.PERMISSION_GRANTED)) {
-            activity?.let { ActivityCompat.requestPermissions(it, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode) }
+    private fun getLocationPermissionOnRun() {
+
+
+        if (activity?.let { ActivityCompat.checkSelfPermission(it, Manifest.permission.ACCESS_COARSE_LOCATION) } != PackageManager.PERMISSION_GRANTED) {
+            activity?.let { ActivityCompat.requestPermissions(it, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 30) }
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+
+
+
+        try {
+            locationManager = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            provider = LocationManager.GPS_PROVIDER
+            if (activity?.let { ActivityCompat.checkSelfPermission(it, Manifest.permission.ACCESS_FINE_LOCATION) } != PackageManager.PERMISSION_GRANTED && activity?.let { ActivityCompat.checkSelfPermission(it, Manifest.permission.ACCESS_COARSE_LOCATION) } != PackageManager.PERMISSION_GRANTED) {
+            }
+            //locationManager.requestLocationUpdates(provider, 35000, 10, this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+
+            if (location != null) {
+
+                onLocationChanged(location!!)
+            } else {
+
+            }
+        } catch (e: java.lang.Exception) {
+            /*e.printStackTrace();*/
+
+        }
     }
     override fun onLocationChanged(location: Location) {
 
@@ -488,14 +520,43 @@ class CurrentLocationWeather : Fragment(), LocationListener {
         TODO("Not yet implemented")
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (requestCode == locationPermissionCode) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(activity, "Permission Granted", Toast.LENGTH_SHORT).show()
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults) //Log.d("RCODEEEEEE",Integer.toString(requestCode));
+        when (requestCode) {
+            30 -> if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            } else if (Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(permissions[0]!!)) {
+                //Toast.makeText(MainActivity.this, "Go to Settings and Grant the permission to use this feature.", Toast.LENGTH_SHORT).show();
+
             } else {
-                Toast.makeText(activity, "Permission Denied", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(MainActivity.this, "Permission Denied", Toast.LENGTH_SHORT).show();
+
             }
         }
+    }
+    override fun onResume() {
+        super.onResume()
+        if (activity?.let { ActivityCompat.checkSelfPermission(it, Manifest.permission.ACCESS_FINE_LOCATION) } != PackageManager.PERMISSION_GRANTED && activity?.let { ActivityCompat.checkSelfPermission(it, Manifest.permission.ACCESS_COARSE_LOCATION) } != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (activity?.let { ActivityCompat.checkSelfPermission(it, Manifest.permission.ACCESS_FINE_LOCATION) } != PackageManager.PERMISSION_GRANTED && activity?.let { ActivityCompat.checkSelfPermission(it, Manifest.permission.ACCESS_COARSE_LOCATION) } != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+        locationManager.removeUpdates(this as LocationListener)
     }
 
     private fun getLocationAddress(){
